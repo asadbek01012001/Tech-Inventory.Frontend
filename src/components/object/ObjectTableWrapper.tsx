@@ -202,6 +202,10 @@ export default function ObjectTableWrapper({ filter }: Props) {
     setAddModal(false);
   }, []);
 
+  const downloadPdf = useCallback((value: any) => {
+    ObyektApi.getObyektReport(value, `Obyekt-${value}.pdf`);
+  }, []);
+
   const downloadFile = useCallback((value: any) => {
     axios({
       url: `http://172.24.201.4:1000/api/Object/tech-inventory-bucket?token=${value?.fileName}`,
@@ -269,7 +273,7 @@ export default function ObjectTableWrapper({ filter }: Props) {
     <>
       <TabPage
         headerComponent={
-          <div className="d-flex justify-content-between">
+          <div className="d-flex justify-content-between w-100">
             {!Boolean(CheckRole(UserRoles.Accountant, profile)) ? (
               <Button
                 className="py-1 px-3 text-light"
@@ -299,8 +303,8 @@ export default function ObjectTableWrapper({ filter }: Props) {
           </div>
         }
         footerComponent={
-          <div>
-            <div className="d-flex justify-content-between align-items-center mt-4 pb-3">
+          <>
+            <div className="d-flex justify-content-between align-items-center w-100 mt-4 pb-3">
               {!Boolean(CheckRole(UserRoles.Accountant, profile)) ? (
                 <Button
                   disabled={!(deleteDocuments && deleteDocuments?.length > 0)}
@@ -344,7 +348,7 @@ export default function ObjectTableWrapper({ filter }: Props) {
                 />
               </GroupBox>
             </Modal>
-          </div>
+          </>
         }
       >
         <ObjectTable
@@ -352,19 +356,8 @@ export default function ObjectTableWrapper({ filter }: Props) {
           data={data?.data}
           selectIds={setDeleteDocuments}
           readOnMap={handleReadOnMap}
-          downloadPdf={(value) =>
-            locationHelpers.pushQuery({
-              tab: ObjectFilterTabs.ObjectPdfReport,
-              objectId: value,
-              region: initialFilter.region?.value || 0,
-              district: initialFilter.district?.value || 0,
-              street: initialFilter.street?.value || 0,
-              project: initialFilter.project?.value || 0,
-              order: initialFilter.order?.value || 0,
-              classType: initialFilter.classType?.value || 0,
-              class: initialFilter.class?.value || 0,
-            })
-          }
+          downloadPdf={downloadPdf}
+          // downloadPdf={(value) => ObyektApi.downloadPdf({ id: value })}
           editObyekt={handleEditObyekt}
           setOjectForView={handleViewObyekt}
         />

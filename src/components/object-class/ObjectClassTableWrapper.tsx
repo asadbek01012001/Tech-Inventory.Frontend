@@ -47,7 +47,7 @@ export default function ObjectClassTableWrapper({ filter }: Props) {
   return (
     <TabPage
       headerComponent={
-        <div className="d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center justify-content-between w-100">
           <Button
             className="py-1 px-3 text-light"
             bgColor={BgColors.Green}
@@ -72,7 +72,7 @@ export default function ObjectClassTableWrapper({ filter }: Props) {
         </div>
       }
       footerComponent={
-        <div className="d-flex justify-content-between align-items-center h-100">
+        <div className="d-flex justify-content-between align-items-center w-100 h-100">
           <Button
             disabled={!(deleteDocuments && deleteDocuments?.length > 0)}
             onClick={() => setDeleteModal(true)}
