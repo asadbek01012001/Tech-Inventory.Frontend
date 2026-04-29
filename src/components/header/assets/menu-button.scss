@@ -1,0 +1,21 @@
+.menu-button {
+  height: 100%;
+  padding: 0 20px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg, path {
+    stroke: #94a3b8;
+    transition: stroke 0.15s ease;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+    svg, path { stroke: #e2e8f0; }
+  }
+}

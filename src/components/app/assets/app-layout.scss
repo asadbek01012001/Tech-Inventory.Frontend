@@ -1,0 +1,56 @@
+.app-layout-container {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+
+  .app-sidebar {
+    width: 240px;
+    height: 100%;
+    transition: width ease 0.3s;
+    background-color: #0f172a;
+    flex-shrink: 0;
+  }
+
+  .close-app-sidebar-menu {
+    width: 60px;
+    transition: width ease 0.3s;
+    flex-shrink: 0;
+  }
+
+  .app-pages {
+    width: calc(100% - 240px);
+    height: 100%;
+    transition: width ease 0.3s;
+
+    .app-pages-header {
+      width: 100%;
+      height: 56px;
+    }
+
+    .app-pages-page {
+      width: 100%;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+      overflow-y: auto;
+      background-color: #f1f5f9;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      &::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+        &:hover { background: #94a3b8; }
+      }
+    }
+  }
+
+  .full-app-pages {
+    width: calc(100% - 60px);
+    transition: width ease 0.3s;
+  }
+}

@@ -1,0 +1,83 @@
+.product-form-group {
+  .product-form-group-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    cursor: pointer;
+    overflow: hidden;
+    background-color: #f8fafc;
+
+    .product-form-group-title {
+      padding: 7px 20px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border: 2px solid transparent;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: -1px;
+      transition: color 0.15s ease;
+    }
+
+    .active-form-group-title {
+      border: 2px solid #e2e8f0;
+      border-bottom-color: #fff;
+      color: #1e293b;
+      background-color: #fff;
+    }
+  }
+
+  .product-form-group-body {
+    margin-top: -2px;
+  }
+}
+
+.product-form-readonly-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+
+  .select-picker__control {
+    background-color: #f1f5f9 !important;
+    pointer-events: none !important;
+  }
+
+  .select-picker__indicator {
+    display: none;
+  }
+
+  input, textarea, select {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+  }
+}
+
+.product-form-group-item {
+  display: flex;
+  margin-top: 10px;
+
+  .product-form-group-children {
+    width: 100%;
+  }
+
+  .product-form-group-delete-button,
+  .product-form-group-children-number {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 22px;
+    padding-left: 10px;
+  }
+
+  .product-form-group-children-number {
+    padding-left: 0;
+    padding-right: 10px;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}

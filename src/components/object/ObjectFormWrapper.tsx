@@ -1,0 +1,754 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Button, { BgColors } from "../ui/Button";
+import { useI18n } from "../../i18n/I18nContext";
+import { useRegionApiContext } from "../../api/regions/RegionsApiContext";
+import { useDistrictsApiContext } from "../../api/districts/DistrictsApiContext";
+import { useProjectApiContext } from "../../api/projects/ProjectsApiContext";
+import { useNumberOfOrdersApiContext } from "../../api/number-of-orders/NumberOfOrderApiContext";
+import { update } from "immupdate";
+import { useObyektApiContext } from "../../api/obyekt/ObyektApiContext";
+import { toast } from "react-toastify";
+import { showError } from "../../utils/NotificationUtils";
+import { ObjectFilter, ObjectFilterTabs, ObjectFormTypes } from "../../filters/ObjectFilter";
+import { useOjbectClassApiContext } from "../../api/object-class/ObjectClassApiContext";
+import { useModelsApiContext } from "../../api/models/ModelsApiContext";
+import { SelectPickerOptionsProps } from "../../api/AppDto";
+import { ModelTypes } from "../../api/models/ModelsDto";
+import { useShallowEqualSelector } from "../../hooks/useShallowSelector";
+import { tokenSelector, userIdSelector } from "../../reducers/authReducer";
+import { API_HOST } from "../../constants/AppConstants";
+import { useOjbectClassTypeApiContext } from "../../api/object-class-type/ObjectClassTypeApiContext";
+
+import axios from "axios";
+import TabPage from "../tabs/TabPage";
+import ObjectForm from "./ObjectForm";
+import useLocationHelpers from "../../hooks/userLocationHelpers";
+import ProductForms from "../products/ProductForms";
+
+interface Props {
+  readonly filter: ObjectFilter;
+  readonly initialValues?: any;
+  readonly isModal?: boolean;
+  readonly onModalClose?: () => void;
+}
+
+function transformApiResponse(data: any) {
+  return {
+    ...data,
+    regionId: { label: data?.region, value: data?.regionId },
+    districtId: { label: data?.district, value: data?.districtId },
+    streetId: { label: data?.street, value: data?.streetId },
+    projectId: { label: data?.project, value: data?.projectId },
+    numberOfOrderId: { label: data?.numberOfOrder, value: data?.numberOfOrderId },
+    objectClassId: { label: data?.objectClass, value: data?.objectClassId },
+    objectClassTypeId: { label: data?.objectClassType, value: data?.objectClassTypeId },
+    connectionType: { label: data?.connectionType, value: data?.connectionTypeId },
+    modelId: { label: data?.model, value: data?.modelId },
+    files: data?.files || [],
+  };
+}
+
+export default function ObjectFormWrapper({
+  filter,
+  initialValues: passedInitialValues,
+  isModal,
+  onModalClose,
+}: Props) {
+  const [localInitialValues, setInitalValues] = useState<any>(
+    passedInitialValues ? transformApiResponse(passedInitialValues) : {
+      regionId: 0,
+      districtId: 0,
+      streetId: 0,
+      projectId: 0,
+      numberOfOrderId: 0,
+      objectClassId: 0,
+      objectClassTypeId: 0,
+      modelId: 0,
+      connectionType: "",
+      files: [],
+      name: "",
+      home: "",
+      street: "",
+      latitude: "",
+      longitude: "",
+      info: "",
+      serialNumber: "",
+      numberOfPort: "",
+      phoneNumber: "",
+      akumalator: [],
+      avtomat: [],
+      box: [],
+      bracket: [],
+      utpCabel: [],
+      electrCabel: [],
+      camera: [],
+      anprCamera: [],
+      speedCheckingCamera: [],
+      ptzCamera: [],
+      c327Camera: [],
+      chqbaCamera: [],
+      c733Camera: [],
+      variofakalCamera: [],
+      videoRecorder: [],
+      server: [],
+      switchPoe: [],
+      switchKombo: [],
+      svetaforDetektor: [],
+      svetaforDetektorForCamera: [],
+      terminalServer: [],
+      stabilizer: [],
+      projector: [],
+      centralTelecomunicationShelf: [],
+      mainTelecomunicationShelf: [],
+      distributionShelf: [],
+      telecomunicationShelf: [],
+      ups: [],
+      counter: [],
+      socket: [],
+      odfOpticRack: [],
+      miniOptikRack: [],
+      stanchion: [],
+      connector: [],
+      gofraShell: [],
+      corob: [],
+      mountingBox: [],
+      freezer: [],
+      ribbon: [],
+      sipHook: [],
+      nail: [],
+      glueForNail: [],
+      cabelHook: [],
+      plasticShell: [],
+    },
+  );
+
+  const [models, setModels] = useState<SelectPickerOptionsProps[]>([]);
+
+  const [regions, setRegions] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [obClassTypes, setObClassTypes] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [streets, setStreets] = useState([]);
+  const [numberOfOrders, setNumberOfOrders] = useState([]);
+  const [objectClassifications, setObjectClassifications] = useState([]);
+
+  const { translate } = useI18n();
+
+  const { ObyektApi } = useObyektApiContext();
+  const { RegionsApi } = useRegionApiContext();
+  const { DistrictsApi } = useDistrictsApiContext();
+  const { ProjectsApi } = useProjectApiContext();
+  const { NumberOfOrdersApi } = useNumberOfOrdersApiContext();
+  const { ObjectClassTypeApi } = useOjbectClassTypeApiContext();
+  const { ObjectClassApi } = useOjbectClassApiContext();
+  const { ModelsApi } = useModelsApiContext();
+
+  const locationHelpers = useLocationHelpers();
+  const objectId = useMemo(() => Number(filter.getObyektId()) || 0, [filter]);
+
+  // Get filter params from URL to preserve when going back
+  const uiFilter = useMemo(() => filter.getUiFilter(), [filter]);
+
+  const token = useShallowEqualSelector(tokenSelector);
+  const userId = useShallowEqualSelector(userIdSelector);
+
+  useEffect(() => {
+    if (!passedInitialValues) return;
+    const data = passedInitialValues;
+
+    if (data?.regionId) {
+      DistrictsApi.getDistrictsList({ regionId: data.regionId })
+        .then((r) => {
+          setDistricts(r?.data?.map((d: any) => ({ label: d.name, value: d.id })));
+        })
+        .catch(showError);
+    }
+
+    if (data?.districtId) {
+      DistrictsApi.getStreetsList({ districtId: data.districtId })
+        .then((r) => {
+          setStreets(r?.data?.map((d: any) => ({ label: d.name, value: d.id })));
+        })
+        .catch(showError);
+    }
+
+    if (data?.projectId) {
+      NumberOfOrdersApi.getNumberOfOrdersList({ projectId: data.projectId })
+        .then((r) => {
+          setNumberOfOrders(r?.data?.map((d: any) => ({ label: d.number, value: d.id })));
+        })
+        .catch(showError);
+    }
+
+    if (data?.objectClassTypeId) {
+      ObjectClassApi.getObjectClassesList({ objectClassTypeId: data.objectClassTypeId })
+        .then((r) => {
+          setObjectClassifications(r?.data?.map((d: any) => ({ label: d.name, value: d.id })));
+        })
+        .catch(showError);
+    }
+
+    const connType = data?.connectionType;
+    if (connType === "GPON") {
+      ModelsApi.getModelsList({ type: ModelTypes.GPON })
+        .then((r) => setModels(r?.data?.map((sw: any) => ({ label: sw.name, value: sw.id }))))
+        .catch(showError);
+    } else if (connType === "FTTX") {
+      ModelsApi.getModelsList({ type: ModelTypes.FTTX })
+        .then((r) => setModels(r?.data?.map((sw: any) => ({ label: sw.name, value: sw.id }))))
+        .catch(showError);
+    }
+  }, [passedInitialValues]);
+
+  const objectFormType: ObjectFormTypes = useMemo(
+    () => filter.getOjbectFormType() || ObjectFormTypes.WithoutProductForm,
+    [filter],
+  );
+
+  useEffect(() => {
+    // Skip loading data when initialValues are passed (modal mode)
+    if (passedInitialValues || objectId === 0) {
+      return;
+    }
+    if (objectId !== 0) {
+      ObyektApi.getOneObyekt({ id: Number(objectId) })
+        .then((r) => {
+          if (r?.data?.regionId) {
+            DistrictsApi.getDistrictsList({ regionId: r?.data?.regionId })
+              .then((r) => {
+                const _districts = r?.data?.map((d: any) => {
+                  return {
+                    label: d.name,
+                    value: d.id,
+                  };
+                });
+                setDistricts(_districts);
+              })
+              .catch(showError);
+          }
+
+          if (r?.data?.districtId) {
+            DistrictsApi.getStreetsList({ districtId: r?.data?.districtId })
+              .then((r) => {
+                const _streets = r?.data?.map((d: any) => {
+                  return {
+                    label: d.name,
+                    value: d.id,
+                  };
+                });
+                setStreets(_streets);
+              })
+              .catch(showError);
+          }
+
+          if (r?.data?.projectId) {
+            NumberOfOrdersApi.getNumberOfOrdersList({ projectId: r?.data?.projectId })
+              .then((r) => {
+                const _numberOfOrders = r?.data?.map((d: any) => {
+                  return {
+                    label: d.number,
+                    value: d.id,
+                  };
+                });
+                setNumberOfOrders(_numberOfOrders);
+              })
+              .catch(showError);
+          }
+
+          if (r?.data?.objectClassTypeId) {
+            ObjectClassApi.getObjectClassesList({ objectClassTypeId: r?.data?.objectClassTypeId })
+              .then((r) => {
+                const _objectClassifications = r?.data?.map((d: any) => {
+                  return {
+                    label: d.name,
+                    value: d.id,
+                  };
+                });
+                setObjectClassifications(_objectClassifications);
+              })
+              .catch(showError);
+          }
+
+          const ob = {
+            ...r?.data,
+            regionId: {
+              label: r?.data?.region,
+              value: r?.data?.regionId,
+            },
+            districtId: {
+              label: r?.data?.district,
+              value: r?.data?.districtId,
+            },
+            streetId: {
+              label: r?.data?.street,
+              value: r?.data?.streetId,
+            },
+            projectId: {
+              label: r?.data?.project,
+              value: r?.data?.projectId,
+            },
+            numberOfOrderId: {
+              label: r?.data?.numberOfOrder,
+              value: r?.data?.numberOfOrderId,
+            },
+            objectClassId: {
+              label: r?.data?.objectClass,
+              value: r?.data?.objectClassId,
+            },
+            objectClassTypeId: {
+              label: r?.data?.objectClassType,
+              value: r?.data?.objectClassTypeId,
+            },
+            connectionType: {
+              label: r?.data?.connectionType,
+              value: r?.data?.connectionTypeId,
+            },
+            modelId: {
+              label: r?.data?.model,
+              value: r?.data?.modelId,
+            },
+            files: r?.data?.files || [],
+          };
+          setInitalValues(ob);
+        })
+        .catch(showError);
+    }
+  }, [ObyektApi, DistrictsApi, RegionsApi, ObjectClassTypeApi, objectId, passedInitialValues]);
+
+  useEffect(() => {
+    RegionsApi.getRegionsList()
+      .then((r) => {
+        const _regions = r?.data?.map((region: any) => {
+          return {
+            label: region.name,
+            value: region.id,
+          };
+        });
+        setRegions(_regions);
+      })
+      .catch(showError);
+
+    ProjectsApi.getProjectsList()
+      .then((r) => {
+        const _projects = r?.data?.map((region: any) => {
+          return {
+            label: region.name,
+            value: region.id,
+          };
+        });
+        setProjects(_projects);
+      })
+      .catch(showError);
+
+    ObjectClassTypeApi.getObjectClassTypesList()
+      .then((r) => {
+        const _objectClassicationTypes = r?.data?.map((region: any) => {
+          return {
+            label: region.name,
+            value: region.id,
+          };
+        });
+        setObClassTypes(_objectClassicationTypes);
+      })
+      .catch(showError);
+  }, [RegionsApi, ObjectClassApi, ProjectsApi]);
+
+  const onChangeRegion = useCallback(
+    (value: any) => {
+      DistrictsApi.getDistrictsList({ regionId: value.value })
+        .then((r) => {
+          const _districts = r?.data?.map((d: any) => {
+            return {
+              label: d.name,
+              value: d.id,
+            };
+          });
+          setDistricts(_districts);
+        })
+        .catch(showError);
+
+      setInitalValues((prev: any) =>
+        update(prev, {
+          regionId: value,
+          districtId: {
+            label: "",
+            value: "",
+          },
+        }),
+      );
+    },
+    [DistrictsApi],
+  );
+
+  const onChangeDistrict = useCallback(
+    (value: any) => {
+      DistrictsApi.getStreetsList({ districtId: value.value })
+        .then((r) => {
+          const _streets = r?.data?.map((d: any) => {
+            return {
+              label: d.name,
+              value: d.id,
+            };
+          });
+          setStreets(_streets);
+        })
+        .catch(showError);
+
+      setInitalValues((prev: any) =>
+        update(prev, {
+          districtId: value,
+          streetId: {
+            label: "",
+            value: "",
+          },
+        }),
+      );
+    },
+    [setInitalValues],
+  );
+
+  const onChangeProject = useCallback(
+    (value: any) => {
+      NumberOfOrdersApi.getNumberOfOrdersList({
+        projectId: value.value,
+        regionId: localInitialValues?.regionId?.value,
+        districtId: localInitialValues?.districtId?.value,
+      })
+        .then((r) => {
+          const _numberOfOrders = r?.data?.map((d: any) => {
+            return {
+              label: d.number,
+              value: d.id,
+            };
+          });
+          setNumberOfOrders(_numberOfOrders);
+        })
+        .catch(showError);
+
+      setInitalValues((prev: any) =>
+        update(prev, {
+          projectId: value,
+          numberOfOrderId: {
+            label: "",
+            value: "",
+          },
+        }),
+      );
+    },
+    [NumberOfOrdersApi, localInitialValues?.regionId, localInitialValues?.districtId],
+  );
+
+  const onChangeObjectClassType = useCallback(
+    (value: any) => {
+      ObjectClassApi.getObjectClassesList({ objectClassTypeId: value.value })
+        .then((r) => {
+          const _objectClassifications = r?.data?.map((d: any) => {
+            return {
+              label: d.name,
+              value: d.id,
+            };
+          });
+          setObjectClassifications(_objectClassifications);
+        })
+        .catch(showError);
+
+      setInitalValues((prev: any) =>
+        update(prev, {
+          objectClassTypeId: value,
+          objectClassId: {
+            label: "",
+            value: "",
+          },
+        }),
+      );
+    },
+    [ObjectClassApi],
+  );
+
+  const onSubmit = useCallback(
+    (value: any) => {
+      if (objectId) {
+        const json = {
+          ...value,
+          id: objectId,
+          regionId: value?.regionId?.value,
+          districtId: value?.districtId?.value,
+          streetId: value?.streetId?.value,
+          projectId: value?.projectId?.value,
+          numberOfOrderId: value?.numberOfOrderId?.value,
+          objectClassId: value?.objectClassId?.value,
+          objectClassTypeId: value?.objectClassTypeId?.value,
+          connectionType: value?.connectionType?.value,
+        };
+
+        ObyektApi.updateObyekt(json)
+          .then((r) => {
+            const files = localInitialValues?.files;
+            files &&
+              files.map((file: any) => {
+                if (file && Boolean(file?.file?.type)) {
+                  const url = `${API_HOST}Attachments/Create?objectId=${r?.data?.id}&originalFileName=${file.originalFileName}`;
+                  const formData = new FormData();
+                  formData.append("File", file?.file);
+                  const config = {
+                    headers: {
+                      "content-type": "multipart/form-data",
+                      Authorization: `Bearer ${token}`,
+                      userId: `${userId}`,
+                    },
+                  };
+                  axios
+                    .post(url, formData, config)
+                    .then((response: any) => {
+                      toast.success(response?.data);
+                    })
+                    .catch(showError);
+                } else {
+                  const json = {
+                    ...file,
+                  };
+                  ObyektApi.updateAttachment(json)
+                    .then((r) => console.log(r))
+                    .catch(showError);
+                }
+              });
+
+            const updateConnectionType = {
+              obyektId: r?.data?.id,
+              modelId: value?.modelId?.value,
+              numberOfPort: value?.numberOfPort,
+              serialNumber: value?.serialNumber,
+              phoneNumber: value?.phoneNumber,
+              type: value?.connectionType?.value,
+            };
+
+            ObyektApi.updateConnectionType(updateConnectionType)
+              .then((r) => toast.success(r?.data?.message))
+              .catch(showError);
+
+            toast.success(r?.data?.message);
+            locationHelpers.pushQuery({ tab: ObjectFilterTabs.ObjectView, objectId: r?.data?.id });
+          })
+          .catch(showError);
+      } else {
+        const json = {
+          ...value,
+          regionId: value?.regionId?.value,
+          districtId: value?.districtId?.value,
+          streetId: value?.streetId?.value,
+          projectId: value?.projectId?.value,
+          numberOfOrderId: value?.numberOfOrderId?.value,
+          objectClassId: value?.objectClassId?.value,
+          objectClassTypeId: value?.objectClassTypeId?.value,
+          connectionType: value?.connectionType?.value,
+        };
+        console.log(json);
+        ObyektApi.createObyekt(json)
+          .then((r) => {
+            if (r?.data?.id) {
+              const files = localInitialValues?.files;
+              files &&
+                files.map((file: any) => {
+                  if (file && Boolean(file?.file?.type)) {
+                    const url = `${API_HOST}Attachments/Create?objectId=${r?.data?.id}&originalFileName=${file.originalFileName}`;
+                    const formData = new FormData();
+                    formData.append("File", file?.file);
+                    const config = {
+                      headers: {
+                        "content-type": "multipart/form-data",
+                        Authorization: `Bearer ${token}`,
+                        userId: `${userId}`,
+                      },
+                    };
+                    axios
+                      .post(url, formData, config)
+                      .then((response: any) => {
+                        toast.success(response?.data);
+                      })
+                      .catch(showError);
+                  }
+                });
+            }
+
+            const createConnectionType = {
+              obyektId: r?.data?.id,
+              modelId: value?.modelId?.value,
+              numberOfPort: value?.numberOfPort,
+              serialNumber: value?.serialNumber,
+              phoneNumber: value?.phoneNumber,
+              type: value?.connectionType?.value,
+            };
+
+            ObyektApi.createConnectionType(createConnectionType)
+              .then((r) => toast.success(r?.data?.message))
+              .catch(showError);
+
+            toast.success(r?.data?.message);
+            locationHelpers.pushQuery({ tab: ObjectFilterTabs.ObjectView, objectId: r?.data?.id });
+          })
+          .catch(showError);
+      }
+    },
+    [ObyektApi, locationHelpers, objectId, localInitialValues.files],
+  );
+
+  const setConnectionType = useCallback(
+    (value: any) => {
+      if (value?.label === "FTTX") {
+        ModelsApi.getModelsList({ type: ModelTypes.FTTX })
+          .then((r) => {
+            const _models = r?.data.map((sw: any) => {
+              return {
+                label: sw.name,
+                value: sw.id,
+              };
+            });
+            setModels(_models);
+          })
+          .catch(showError);
+      } else if (value?.label === "GPON") {
+        ModelsApi.getModelsList({ type: ModelTypes.GPON })
+          .then((r) => {
+            const _models = r?.data.map((sw: any) => {
+              return {
+                label: sw.name,
+                value: sw.id,
+              };
+            });
+            setModels(_models);
+          })
+          .catch(showError);
+      }
+    },
+    [ModelsApi],
+  );
+
+  const deleteFileFromDb = useCallback(
+    (value: any) => {
+      if (objectId) {
+        ObyektApi.deleteFile({ id: value.id })
+          .then((r) => toast.success(r?.message))
+          .catch(showError);
+      }
+    },
+    [ObyektApi, objectId],
+  );
+
+  const formInitialValues = localInitialValues;
+
+  const handleBack = useCallback(() => {
+    if (isModal && onModalClose) {
+      onModalClose();
+    } else {
+      locationHelpers.pushQuery({
+        tab: ObjectFilterTabs.ObjectTable,
+        objectId: 0,
+        region: uiFilter.region,
+        district: uiFilter.district,
+        street: uiFilter.street,
+        project: uiFilter.project,
+        order: uiFilter.order,
+        classType: uiFilter.classType,
+        class: uiFilter.class,
+      });
+    }
+  }, [isModal, onModalClose, locationHelpers, uiFilter]);
+
+  const handleSubmit = useCallback(
+    (values: any) => {
+      onSubmit(values);
+      if (isModal && onModalClose) {
+        onModalClose();
+      }
+    },
+    [isModal, onModalClose],
+  );
+
+  // Modal render - without TabPage wrapper
+  if (isModal) {
+    return (
+      <div className="p-3">
+        <ObjectForm
+          models={models}
+          regionsOptions={regions}
+          districtsOptions={districts}
+          streetsOptions={streets}
+          projectsOptions={projects}
+          numberOfOrdersOptions={numberOfOrders}
+          initialValues={formInitialValues}
+          setInitialValues={setInitalValues}
+          deleteFileFromDb={deleteFileFromDb}
+          objectClassificationsTypesOptions={obClassTypes}
+          objectClassificationsOptions={objectClassifications}
+          onChangeRegion={onChangeRegion}
+          onChangeDistrict={onChangeDistrict}
+          onChangeProject={onChangeProject}
+          setConnectionType={setConnectionType}
+          onChangeObjectClassType={onChangeObjectClassType}
+          formType={objectFormType}
+        />
+        <ProductForms initialValues={formInitialValues} setInitialValues={setInitalValues} />
+        <div className="mt-4 px-4 d-flex justify-content-end align-items-center gap-2">
+          <Button className="px-4 py-2" bgColor={BgColors.White} onClick={handleBack}>
+            Bekor qilish
+          </Button>
+          <Button
+            className="px-4 py-2 text-light"
+            bgColor={BgColors.Green}
+            onClick={() => onSubmit(formInitialValues)}
+          >
+            Saqlash
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Page render - with TabPage wrapper
+  return (
+    <TabPage
+      footerClassName="d-none"
+      contentClassName="pb-3"
+      headerComponent={
+        <Button
+          className=" px-3 text-light"
+          bgColor={BgColors.Yellow}
+          heigh="34px"
+          onClick={handleBack}
+        >
+          {translate("BACK_BUTTON_TITLE")}
+        </Button>
+      }
+    >
+      <ObjectForm
+        models={models}
+        regionsOptions={regions}
+        districtsOptions={districts}
+        streetsOptions={streets}
+        projectsOptions={projects}
+        numberOfOrdersOptions={numberOfOrders}
+        initialValues={formInitialValues}
+        setInitialValues={setInitalValues}
+        deleteFileFromDb={deleteFileFromDb}
+        objectClassificationsTypesOptions={obClassTypes}
+        objectClassificationsOptions={objectClassifications}
+        onChangeRegion={onChangeRegion}
+        onChangeDistrict={onChangeDistrict}
+        onChangeProject={onChangeProject}
+        setConnectionType={setConnectionType}
+        onChangeObjectClassType={onChangeObjectClassType}
+        formType={objectFormType}
+      />
+      <ProductForms initialValues={formInitialValues} setInitialValues={setInitalValues} />
+      <div className="mt-4 px-4 d-flex justify-content-end align-items-center">
+        <Button
+          className="px-4 py-2 text-light"
+          bgColor={BgColors.Green}
+          onClick={() => onSubmit(formInitialValues)}
+        >
+          Saqlash
+        </Button>
+      </div>
+    </TabPage>
+  );
+}
