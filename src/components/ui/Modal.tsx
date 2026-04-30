@@ -10,10 +10,11 @@ interface Props {
 }
 
 export default function CustomModal({ show, onHide, children, width, height }: Props) {
-  const dialogStyle: React.CSSProperties = {
-    width: typeof width === "number" ? `${width}px` : width,
-    maxWidth: "100%",
-  };
+  const rawWidth = typeof width === "number" ? `${width}px` : width;
+
+  const modalStyle = rawWidth
+    ? ({ "--bs-modal-width": rawWidth } as React.CSSProperties)
+    : undefined;
 
   const bodyStyle: React.CSSProperties = {
     maxHeight: typeof height === "number" ? `${height}px` : (height ?? "unset"),
@@ -25,8 +26,7 @@ export default function CustomModal({ show, onHide, children, width, height }: P
       show={show}
       onHide={onHide}
       centered
-      dialogStyle={dialogStyle}
-      size="xl"
+      style={modalStyle}
       contentClassName="p-0"
     >
       <Modal.Body style={bodyStyle}>{children}</Modal.Body>

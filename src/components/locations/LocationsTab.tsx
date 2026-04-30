@@ -349,7 +349,7 @@ export default function LocationsTab() {
         onChangeClassType={onChangeClassType}
         onMarkerClick={handleMarkerClick}
       />
-      <CustomModal show={showModal} onHide={handleModalClose} width="90vw" height="80vh">
+      <CustomModal show={showModal} onHide={handleModalClose} width="70vw" height="80vh">
         {objectViewValues && (
           <>
             <ObjectView initialValues={objectViewValues} setPath={downloadFile} />

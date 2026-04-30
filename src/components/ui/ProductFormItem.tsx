@@ -7,6 +7,7 @@ import { ReactNode, useMemo } from "react";
 import DeleteIcon from "../icons/DeleteIcon";
 import Button, { BgColors } from "./Button";
 import { useProductReadonly } from "../../contexts/ProductReadonlyContext";
+import { useObjectFormMode } from "../../contexts/ObjectFormModeContext";
 
 interface Props {
   readonly index: number;
@@ -17,6 +18,7 @@ interface Props {
 export default function ProductFormItem({ index, children, deleteClick }: Props) {
   const query = useQuery();
   const isReadonly = useProductReadonly();
+  const isFormMode = useObjectFormMode();
 
   const filter = useMemo(() => new ObjectFilter(query), [query]);
 
@@ -34,7 +36,7 @@ export default function ProductFormItem({ index, children, deleteClick }: Props)
           children
         )}
       </div>
-      {Boolean(!isReadonly && tab === ObjectFilterTabs.ObjectForm) && (
+      {Boolean(!isReadonly && (isFormMode || tab === ObjectFilterTabs.ObjectForm)) && (
         <div className="product-form-group-delete-button">
           <Button className="px-2 py-2" bgColor={BgColors.Red} onClick={() => deleteClick(index)}>
             <DeleteIcon />

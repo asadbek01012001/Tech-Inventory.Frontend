@@ -24,12 +24,14 @@ import TabPage from "../tabs/TabPage";
 import ObjectForm from "./ObjectForm";
 import useLocationHelpers from "../../hooks/userLocationHelpers";
 import ProductForms from "../products/ProductForms";
+import { ObjectFormModeContext } from "../../contexts/ObjectFormModeContext";
 
 interface Props {
   readonly filter: ObjectFilter;
   readonly initialValues?: any;
   readonly isModal?: boolean;
   readonly onModalClose?: () => void;
+  readonly onAfterCreate?: (id: number) => void;
 }
 
 function transformApiResponse(data: any) {
@@ -53,73 +55,76 @@ export default function ObjectFormWrapper({
   initialValues: passedInitialValues,
   isModal,
   onModalClose,
+  onAfterCreate,
 }: Props) {
   const [localInitialValues, setInitalValues] = useState<any>(
-    passedInitialValues ? transformApiResponse(passedInitialValues) : {
-      regionId: 0,
-      districtId: 0,
-      streetId: 0,
-      projectId: 0,
-      numberOfOrderId: 0,
-      objectClassId: 0,
-      objectClassTypeId: 0,
-      modelId: 0,
-      connectionType: "",
-      files: [],
-      name: "",
-      home: "",
-      street: "",
-      latitude: "",
-      longitude: "",
-      info: "",
-      serialNumber: "",
-      numberOfPort: "",
-      phoneNumber: "",
-      akumalator: [],
-      avtomat: [],
-      box: [],
-      bracket: [],
-      utpCabel: [],
-      electrCabel: [],
-      camera: [],
-      anprCamera: [],
-      speedCheckingCamera: [],
-      ptzCamera: [],
-      c327Camera: [],
-      chqbaCamera: [],
-      c733Camera: [],
-      variofakalCamera: [],
-      videoRecorder: [],
-      server: [],
-      switchPoe: [],
-      switchKombo: [],
-      svetaforDetektor: [],
-      svetaforDetektorForCamera: [],
-      terminalServer: [],
-      stabilizer: [],
-      projector: [],
-      centralTelecomunicationShelf: [],
-      mainTelecomunicationShelf: [],
-      distributionShelf: [],
-      telecomunicationShelf: [],
-      ups: [],
-      counter: [],
-      socket: [],
-      odfOpticRack: [],
-      miniOptikRack: [],
-      stanchion: [],
-      connector: [],
-      gofraShell: [],
-      corob: [],
-      mountingBox: [],
-      freezer: [],
-      ribbon: [],
-      sipHook: [],
-      nail: [],
-      glueForNail: [],
-      cabelHook: [],
-      plasticShell: [],
-    },
+    passedInitialValues
+      ? transformApiResponse(passedInitialValues)
+      : {
+          regionId: 0,
+          districtId: 0,
+          streetId: 0,
+          projectId: 0,
+          numberOfOrderId: 0,
+          objectClassId: 0,
+          objectClassTypeId: 0,
+          modelId: 0,
+          connectionType: "",
+          files: [],
+          name: "",
+          home: "",
+          street: "",
+          latitude: "",
+          longitude: "",
+          info: "",
+          serialNumber: "",
+          numberOfPort: "",
+          phoneNumber: "",
+          akumalator: [],
+          avtomat: [],
+          box: [],
+          bracket: [],
+          utpCabel: [],
+          electrCabel: [],
+          camera: [],
+          anprCamera: [],
+          speedCheckingCamera: [],
+          ptzCamera: [],
+          c327Camera: [],
+          chqbaCamera: [],
+          c733Camera: [],
+          variofakalCamera: [],
+          videoRecorder: [],
+          server: [],
+          switchPoe: [],
+          switchKombo: [],
+          svetaforDetektor: [],
+          svetaforDetektorForCamera: [],
+          terminalServer: [],
+          stabilizer: [],
+          projector: [],
+          centralTelecomunicationShelf: [],
+          mainTelecomunicationShelf: [],
+          distributionShelf: [],
+          telecomunicationShelf: [],
+          ups: [],
+          counter: [],
+          socket: [],
+          odfOpticRack: [],
+          miniOptikRack: [],
+          stanchion: [],
+          connector: [],
+          gofraShell: [],
+          corob: [],
+          mountingBox: [],
+          freezer: [],
+          ribbon: [],
+          sipHook: [],
+          nail: [],
+          glueForNail: [],
+          cabelHook: [],
+          plasticShell: [],
+        },
   );
 
   const [models, setModels] = useState<SelectPickerOptionsProps[]>([]);
@@ -527,7 +532,12 @@ export default function ObjectFormWrapper({
               .catch(showError);
 
             toast.success(r?.data?.message);
-            locationHelpers.pushQuery({ tab: ObjectFilterTabs.ObjectView, objectId: r?.data?.id });
+            if (isModal && onAfterCreate) {
+              onModalClose?.();
+              onAfterCreate(r?.data?.id);
+            } else {
+              locationHelpers.pushQuery({ tab: ObjectFilterTabs.ObjectView, objectId: r?.data?.id });
+            }
           })
           .catch(showError);
       } else {
@@ -542,7 +552,6 @@ export default function ObjectFormWrapper({
           objectClassTypeId: value?.objectClassTypeId?.value,
           connectionType: value?.connectionType?.value,
         };
-        console.log(json);
         ObyektApi.createObyekt(json)
           .then((r) => {
             if (r?.data?.id) {
@@ -584,12 +593,17 @@ export default function ObjectFormWrapper({
               .catch(showError);
 
             toast.success(r?.data?.message);
-            locationHelpers.pushQuery({ tab: ObjectFilterTabs.ObjectView, objectId: r?.data?.id });
+            if (isModal && onAfterCreate) {
+              onModalClose?.();
+              onAfterCreate(r?.data?.id);
+            } else {
+              locationHelpers.pushQuery({ tab: ObjectFilterTabs.ObjectView, objectId: r?.data?.id });
+            }
           })
           .catch(showError);
       }
     },
-    [ObyektApi, locationHelpers, objectId, localInitialValues.files],
+    [ObyektApi, locationHelpers, objectId, localInitialValues.files, isModal, onModalClose, onAfterCreate],
   );
 
   const setConnectionType = useCallback(
@@ -667,7 +681,62 @@ export default function ObjectFormWrapper({
   // Modal render - without TabPage wrapper
   if (isModal) {
     return (
-      <div className="p-3">
+      <ObjectFormModeContext.Provider value={true}>
+        <div className="p-3">
+          <ObjectForm
+            models={models}
+            regionsOptions={regions}
+            districtsOptions={districts}
+            streetsOptions={streets}
+            projectsOptions={projects}
+            numberOfOrdersOptions={numberOfOrders}
+            initialValues={formInitialValues}
+            setInitialValues={setInitalValues}
+            deleteFileFromDb={deleteFileFromDb}
+            objectClassificationsTypesOptions={obClassTypes}
+            objectClassificationsOptions={objectClassifications}
+            onChangeRegion={onChangeRegion}
+            onChangeDistrict={onChangeDistrict}
+            onChangeProject={onChangeProject}
+            setConnectionType={setConnectionType}
+            onChangeObjectClassType={onChangeObjectClassType}
+            formType={objectFormType}
+          />
+          <ProductForms initialValues={formInitialValues} setInitialValues={setInitalValues} />
+          <div className="mt-4 px-4 d-flex justify-content-end align-items-center gap-2">
+            <Button className="px-4 py-2" bgColor={BgColors.White} onClick={handleBack}>
+              Bekor qilish
+            </Button>
+            <Button
+              className="px-4 py-2 text-light"
+              bgColor={BgColors.Green}
+              onClick={() => onSubmit(formInitialValues)}
+            >
+              Saqlash
+            </Button>
+          </div>
+        </div>
+      </ObjectFormModeContext.Provider>
+    );
+  }
+
+  // Page render - with TabPage wrapper
+  return (
+    <ObjectFormModeContext.Provider value={true}>
+      <TabPage
+        footerClassName="d-none"
+        contentClassName="pb-3"
+        headerComponent={
+          <Button
+            className=" px-3 text-light"
+            bgColor={BgColors.Yellow}
+            heigh="34px"
+            onClick={handleBack}
+          >
+            {translate("BACK_BUTTON_TITLE")}
+          </Button>
+        }
+      >
         <ObjectForm
           models={models}
           regionsOptions={regions}
@@ -688,10 +757,7 @@ export default function ObjectFormWrapper({
           formType={objectFormType}
         />
         <ProductForms initialValues={formInitialValues} setInitialValues={setInitalValues} />
-        <div className="mt-4 px-4 d-flex justify-content-end align-items-center gap-2">
-          <Button className="px-4 py-2" bgColor={BgColors.White} onClick={handleBack}>
-            Bekor qilish
-          </Button>
+        <div className="mt-4 px-4 d-flex justify-content-end align-items-center">
           <Button
             className="px-4 py-2 text-light"
             bgColor={BgColors.Green}
@@ -700,55 +766,7 @@ export default function ObjectFormWrapper({
             Saqlash
           </Button>
         </div>
-      </div>
-    );
-  }
-
-  // Page render - with TabPage wrapper
-  return (
-    <TabPage
-      footerClassName="d-none"
-      contentClassName="pb-3"
-      headerComponent={
-        <Button
-          className=" px-3 text-light"
-          bgColor={BgColors.Yellow}
-          heigh="34px"
-          onClick={handleBack}
-        >
-          {translate("BACK_BUTTON_TITLE")}
-        </Button>
-      }
-    >
-      <ObjectForm
-        models={models}
-        regionsOptions={regions}
-        districtsOptions={districts}
-        streetsOptions={streets}
-        projectsOptions={projects}
-        numberOfOrdersOptions={numberOfOrders}
-        initialValues={formInitialValues}
-        setInitialValues={setInitalValues}
-        deleteFileFromDb={deleteFileFromDb}
-        objectClassificationsTypesOptions={obClassTypes}
-        objectClassificationsOptions={objectClassifications}
-        onChangeRegion={onChangeRegion}
-        onChangeDistrict={onChangeDistrict}
-        onChangeProject={onChangeProject}
-        setConnectionType={setConnectionType}
-        onChangeObjectClassType={onChangeObjectClassType}
-        formType={objectFormType}
-      />
-      <ProductForms initialValues={formInitialValues} setInitialValues={setInitalValues} />
-      <div className="mt-4 px-4 d-flex justify-content-end align-items-center">
-        <Button
-          className="px-4 py-2 text-light"
-          bgColor={BgColors.Green}
-          onClick={() => onSubmit(formInitialValues)}
-        >
-          Saqlash
-        </Button>
-      </div>
-    </TabPage>
+      </TabPage>
+    </ObjectFormModeContext.Provider>
   );
 }

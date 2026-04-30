@@ -117,6 +117,7 @@ export default function ObjectTableWrapper({ filter }: Props) {
   const [editModal, setEditModal] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const [addModal, setAddModal] = useState(false);
+  const [addModalKey, setAddModalKey] = useState(0);
 
   const locationHelpers = useLocationHelpers();
   const showOnlyCreatedMe = useShallowEqualSelector(appIsCreatedBySelector);
@@ -198,9 +199,22 @@ export default function ObjectTableWrapper({ filter }: Props) {
   }, []);
 
   // Add modal handler
+  const handleAddModalOpen = useCallback(() => {
+    setAddModalKey((prev) => prev + 1);
+    setAddModal(true);
+  }, []);
+
   const handleAddModalClose = useCallback(() => {
     setAddModal(false);
   }, []);
+
+  const handleAfterCreate = useCallback(
+    (id: number) => {
+      handleAddModalClose();
+      handleViewObyekt(id);
+    },
+    [handleAddModalClose, handleViewObyekt],
+  );
 
   const downloadPdf = useCallback((value: any) => {
     ObyektApi.getObyektReport(value, `Obyekt-${value}.pdf`);
@@ -280,7 +294,7 @@ export default function ObjectTableWrapper({ filter }: Props) {
                 bgColor={BgColors.Green}
                 heigh="34px"
                 icon={<AddIcon />}
-                onClick={() => setAddModal(true)}
+                onClick={handleAddModalOpen}
               >
                 {translate("ADD_BUTTON_TITLE")}
               </Button>
@@ -363,7 +377,7 @@ export default function ObjectTableWrapper({ filter }: Props) {
         />
       </TabPage>
 
-      <Modal show={mapViewModal} onHide={handleMapViewClose} width="90vw" height="80vh">
+      <Modal show={mapViewModal} onHide={handleMapViewClose} width="70vw" height="80vh">
         <div style={{ height: "40vh" }}>
           <LeafletMapForMarkers
             markerList={mapMarkerList}
@@ -381,7 +395,7 @@ export default function ObjectTableWrapper({ filter }: Props) {
       </Modal>
 
       {/* View Modal */}
-      <Modal show={viewModal} onHide={handleViewModalClose} width="90vw" height="80vh">
+      <Modal show={viewModal} onHide={handleViewModalClose} width="70vw" height="80vh">
         {viewData && (
           <>
             <ObjectView initialValues={viewData} setPath={downloadFile} />
@@ -391,7 +405,7 @@ export default function ObjectTableWrapper({ filter }: Props) {
       </Modal>
 
       {/* Edit Modal */}
-      <Modal show={editModal} onHide={handleEditModalClose} width="90vw" height="90vh">
+      <Modal show={editModal} onHide={handleEditModalClose} width="70vw" height="90vh">
         {editData && (
           <ObjectFormWrapper
             filter={filter}
@@ -403,8 +417,14 @@ export default function ObjectTableWrapper({ filter }: Props) {
       </Modal>
 
       {/* Add Modal */}
-      <Modal show={addModal} onHide={handleAddModalClose} width="90vw" height="90vh">
-        <ObjectFormWrapper filter={filter} isModal={true} onModalClose={handleAddModalClose} />
+      <Modal show={addModal} onHide={handleAddModalClose} width="70vw" height="90vh">
+        <ObjectFormWrapper
+          key={addModalKey}
+          filter={filter}
+          isModal={true}
+          onModalClose={handleAddModalClose}
+          onAfterCreate={handleAfterCreate}
+        />
       </Modal>
     </>
   );

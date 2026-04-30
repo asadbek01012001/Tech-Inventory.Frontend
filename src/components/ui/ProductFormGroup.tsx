@@ -6,6 +6,7 @@ import { GroupBox } from "./GroupBox";
 import { useQuery } from "../../hooks/useQuery";
 import { ObjectFilter, ObjectFilterTabs } from "../../filters/ObjectFilter";
 import { useProductReadonly } from "../../contexts/ProductReadonlyContext";
+import { useObjectFormMode } from "../../contexts/ObjectFormModeContext";
 
 interface Props {
   readonly title: string;
@@ -16,6 +17,7 @@ interface Props {
 export default function ProductFormGroup({ title, children, addClick }: Props) {
   const query = useQuery();
   const isReadonly = useProductReadonly();
+  const isFormMode = useObjectFormMode();
 
   const filter = useMemo(() => new ObjectFilter(query), [query]);
 
@@ -25,7 +27,7 @@ export default function ProductFormGroup({ title, children, addClick }: Props) {
     <div className="product-form-group px-4 mt-2">
       <div
         className="product-form-group-header"
-        onClick={() => !isReadonly && tab === ObjectFilterTabs.ObjectForm && addClick()}
+        onClick={() => !isReadonly && (isFormMode || tab === ObjectFilterTabs.ObjectForm) && addClick()}
       >
         <div
           className={cx("product-form-group-title", {
