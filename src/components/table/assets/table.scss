@@ -8,6 +8,7 @@ table {
   max-width: none;
   table-layout: fixed;
   width: 100%;
+  min-width: 100%;
 
   thead {
     position: sticky;
@@ -18,12 +19,14 @@ table {
       font-weight: bold !important;
       height: 60px;
       text-align: center;
+      flex-grow: 1;
     }
   }
 
   tbody {
     td {
       text-align: center;
+      flex-grow: 1;
     }
   }
 }

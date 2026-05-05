@@ -32,6 +32,7 @@ interface Props {
   readonly isModal?: boolean;
   readonly onModalClose?: () => void;
   readonly onAfterCreate?: (id: number) => void;
+  readonly objectId?: number;
 }
 
 function transformApiResponse(data: any) {
@@ -56,6 +57,7 @@ export default function ObjectFormWrapper({
   isModal,
   onModalClose,
   onAfterCreate,
+  objectId: propObjectId,
 }: Props) {
   const [localInitialValues, setInitalValues] = useState<any>(
     passedInitialValues
@@ -149,7 +151,10 @@ export default function ObjectFormWrapper({
   const { ModelsApi } = useModelsApiContext();
 
   const locationHelpers = useLocationHelpers();
-  const objectId = useMemo(() => Number(filter.getObyektId()) || 0, [filter]);
+  const objectId = useMemo(
+    () => propObjectId ?? (Number(filter.getObyektId()) || 0),
+    [propObjectId, filter],
+  );
 
   // Get filter params from URL to preserve when going back
   const uiFilter = useMemo(() => filter.getUiFilter(), [filter]);
@@ -536,7 +541,10 @@ export default function ObjectFormWrapper({
               onModalClose?.();
               onAfterCreate(r?.data?.id);
             } else {
-              locationHelpers.pushQuery({ tab: ObjectFilterTabs.ObjectView, objectId: r?.data?.id });
+              locationHelpers.pushQuery({
+                tab: ObjectFilterTabs.ObjectView,
+                objectId: r?.data?.id,
+              });
             }
           })
           .catch(showError);
@@ -597,13 +605,24 @@ export default function ObjectFormWrapper({
               onModalClose?.();
               onAfterCreate(r?.data?.id);
             } else {
-              locationHelpers.pushQuery({ tab: ObjectFilterTabs.ObjectView, objectId: r?.data?.id });
+              locationHelpers.pushQuery({
+                tab: ObjectFilterTabs.ObjectView,
+                objectId: r?.data?.id,
+              });
             }
           })
           .catch(showError);
       }
     },
-    [ObyektApi, locationHelpers, objectId, localInitialValues.files, isModal, onModalClose, onAfterCreate],
+    [
+      ObyektApi,
+      locationHelpers,
+      objectId,
+      localInitialValues.files,
+      isModal,
+      onModalClose,
+      onAfterCreate,
+    ],
   );
 
   const setConnectionType = useCallback(

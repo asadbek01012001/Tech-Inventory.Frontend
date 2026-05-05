@@ -10,16 +10,13 @@ import CustomModal from "../ui/Modal";
 
 export default function DashboardTab() {
   const [users, setUsers] = useState([]);
-
-  const [isShowUserModal, setIsShowUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ id: number; label: string } | null>(null);
 
   const { DashboardApi } = useDashboardApiContext();
 
   useEffect(() => {
     DashboardApi.getUsers()
-      .then((r) => {
-        setUsers(r?.data);
-      })
+      .then((r) => setUsers(r?.data))
       .catch(showError);
   }, [DashboardApi]);
 
@@ -30,16 +27,22 @@ export default function DashboardTab() {
           <ObjectsDashboard />
         </div>
         <div className="col-2">
-          <DashboardUsers data={users} onClickUser={(value: any) => setIsShowUserModal(true)} />
+          <DashboardUsers
+            data={users}
+            onClickUser={(value: any) => setSelectedUser({ id: value.id, label: value.label })}
+          />
         </div>
       </div>
+
       <CustomModal
-        show={isShowUserModal}
+        show={Boolean(selectedUser)}
         width="80vw"
         height="70vh"
-        onHide={() => setIsShowUserModal(false)}
+        onHide={() => setSelectedUser(null)}
       >
-        <DashboardObjectTableWrapper />
+        {selectedUser && (
+          <DashboardObjectTableWrapper userId={selectedUser.id} userName={selectedUser.label} />
+        )}
       </CustomModal>
     </DashboardTabLayout>
   );

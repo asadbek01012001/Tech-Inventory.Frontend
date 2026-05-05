@@ -9,6 +9,10 @@ interface TableProps {
   readonly selectRowCheckbox?: (select: any[]) => void;
 }
 
+function withMinWidth(style: React.CSSProperties | undefined): React.CSSProperties {
+  return { ...style, minWidth: "100%" };
+}
+
 export default function Table({ columns, data = [], loading, selectRowCheckbox }: TableProps) {
   const defaultColumn = useMemo(
     () => ({
@@ -72,56 +76,63 @@ export default function Table({ columns, data = [], loading, selectRowCheckbox }
     [setIds, dataTable],
   );
 
+  const { style: tableStyle, ...tableRest } = getTableProps();
+
   return (
     <div className="table-wrapper">
-      <table {...getTableProps()} className="table table-bordered table-striped">
+      <table
+        {...tableRest}
+        style={withMinWidth(tableStyle)}
+        className="table table-bordered table-striped"
+      >
         <thead>
-          {headerGroups.map((headerGroup: any, i: any) => (
-            <tr key={i} {...headerGroup.getHeaderGroupProps()}>
-              {selectRowCheckbox ? (
-                <th>
-                  <input
-                    type="checkbox"
-                    name="allSelect"
-                    width={100}
-                    checked={
-                      dataTable?.length > 0
-                        ? !dataTable?.some((user: any) => user?.isChecked !== true)
-                        : false
-                    }
-                    onChange={handleChange}
-                  />
-                </th>
-              ) : (
-                <span>#</span>
-              )}
-              {headerGroup.headers.map((column: any, index: any) => (
-                <th
-                  key={index}
-                  {...column.getHeaderProps(column.getSortByToggleProps())}
-                  className="d-flex align-items-center justify-content-center"
-                >
-                  {column.render("Header")}
-
-                  <div
-                    style={{
-                      width: column.width,
-                    }}
-                    {...column.getResizerProps()}
-                    className={`resizer`}
-                  />
-                </th>
-              ))}
-            </tr>
-          ))}
+          {headerGroups.map((headerGroup: any, i: any) => {
+            const { style: hgStyle, ...hgRest } = headerGroup.getHeaderGroupProps();
+            return (
+              <tr key={i} {...hgRest} style={withMinWidth(hgStyle)}>
+                {selectRowCheckbox ? (
+                  <th>
+                    <input
+                      type="checkbox"
+                      name="allSelect"
+                      width={100}
+                      checked={
+                        dataTable?.length > 0
+                          ? !dataTable?.some((user: any) => user?.isChecked !== true)
+                          : false
+                      }
+                      onChange={handleChange}
+                    />
+                  </th>
+                ) : (
+                  <span style={{ display: "inline-block", width: "40px", textAlign: "center", flexShrink: 0 }}>#</span>
+                )}
+                {headerGroup.headers.map((column: any, index: any) => (
+                  <th
+                    key={index}
+                    {...column.getHeaderProps(column.getSortByToggleProps())}
+                    className="d-flex align-items-center justify-content-center"
+                  >
+                    {column.render("Header")}
+                    <div
+                      style={{ width: column.width }}
+                      {...column.getResizerProps()}
+                      className="resizer"
+                    />
+                  </th>
+                ))}
+              </tr>
+            );
+          })}
         </thead>
 
         {data.length > 0 && !loading ? (
           <tbody {...getTableBodyProps()}>
             {dataTable.map((row: any, index: any) => {
               prepareRow(row);
+              const { style: rowStyle, ...rowRest } = row.getRowProps();
               return (
-                <tr key={index} {...row.getRowProps()} className="tr">
+                <tr key={index} {...rowRest} style={withMinWidth(rowStyle)} className="tr">
                   {selectRowCheckbox ? (
                     <td>
                       <input
@@ -132,11 +143,11 @@ export default function Table({ columns, data = [], loading, selectRowCheckbox }
                       />
                     </td>
                   ) : (
-                    <span>{index + 1}.</span>
-                  )}{" "}
-                  {row.cells.map((cell: any, index: number) => {
+                    <span style={{ display: "inline-block", width: "40px", textAlign: "center", flexShrink: 0 }}>{index + 1}.</span>
+                  )}
+                  {row.cells.map((cell: any, cellIndex: number) => {
                     return (
-                      <td key={index} {...cell.getCellProps()}>
+                      <td key={cellIndex} {...cell.getCellProps()}>
                         {cell.render("Cell")}
                       </td>
                     );

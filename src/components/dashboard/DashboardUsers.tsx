@@ -25,7 +25,7 @@ export default function DashboardUsers({ data, onClickUser }: Props) {
                 className={cx("dashboard-users-item", {
                   "text-success fw-bold": profile?.UserId == item?.id,
                 })}
-                onClick={() => onClickUser({ id: item?.id })}
+                onClick={() => onClickUser({ id: item?.id, label: item?.label })}
               >
                 <div>
                   {index + 1}.{item?.label}

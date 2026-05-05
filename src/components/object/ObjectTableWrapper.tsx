@@ -410,6 +410,7 @@ export default function ObjectTableWrapper({ filter }: Props) {
           <ObjectFormWrapper
             filter={filter}
             initialValues={editData}
+            objectId={editData?.id}
             isModal={true}
             onModalClose={handleEditModalClose}
           />
