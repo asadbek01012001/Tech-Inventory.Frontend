@@ -4,6 +4,7 @@ import BoxesFormWrapper from "./BoxesFormWrapper";
 import BracketsFormWrapper from "./BracketsFormWrapper";
 import CameraFormWrapper from "./CameraFormWrapper";
 import ConnectorsFormWrapper from "./ConnectorsFormWrapper";
+import PiercingConnectorsFormWrapper from "./PiercingConnectorsFormWrapper";
 import CountersFormWrapper from "./CountersFormWrapper";
 import ElectrCabelFormWrapper from "./ElectrCabelFormWrapper";
 import FreezersFormWrapper from "./FreezersFormWrapper";
@@ -154,6 +155,13 @@ export default function ProductViews({ initialValues, setInitialValues, readonly
       {Boolean(initialValues?.connector?.length > 0) && (
         <ConnectorsFormWrapper
           title="Konnektor"
+          initialValues={initialValues}
+          setInitialValues={setInitialValues}
+        />
+      )}
+      {Boolean(initialValues?.piercingConnector?.length > 0) && (
+        <PiercingConnectorsFormWrapper
+          title="Piercing konnektor"
           initialValues={initialValues}
           setInitialValues={setInitialValues}
         />

@@ -62,6 +62,7 @@ export default function ObjectViewWrapper({ filter }: Props) {
     miniOptikRack: [],
     stanchion: [],
     connector: [],
+    piercingConnector: [],
     gofraShell: [],
     corob: [],
     mountingBox: [],

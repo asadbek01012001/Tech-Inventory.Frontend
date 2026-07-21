@@ -4,6 +4,7 @@ import BoxesFormWrapper from "./BoxesFormWrapper";
 import BracketsFormWrapper from "./BracketsFormWrapper";
 import CameraFormWrapper from "./CameraFormWrapper";
 import ConnectorsFormWrapper from "./ConnectorsFormWrapper";
+import PiercingConnectorsFormWrapper from "./PiercingConnectorsFormWrapper";
 import CountersFormWrapper from "./CountersFormWrapper";
 import ElectrCabelFormWrapper from "./ElectrCabelFormWrapper";
 import FreezersFormWrapper from "./FreezersFormWrapper";
@@ -107,6 +108,11 @@ export default function ProductForms({ initialValues, setInitialValues }: Props)
       />
       <ConnectorsFormWrapper
         title="Konnektor"
+        initialValues={initialValues}
+        setInitialValues={setInitialValues}
+      />
+      <PiercingConnectorsFormWrapper
+        title="Piercing konnektor"
         initialValues={initialValues}
         setInitialValues={setInitialValues}
       />

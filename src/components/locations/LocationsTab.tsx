@@ -68,7 +68,7 @@ export default function LocationsTab() {
     centralTelecomunicationShelf: [], mainTelecomunicationShelf: [],
     distributionShelf: [], telecomunicationShelf: [], ups: [],
     counter: [], socket: [], odfOpticRack: [], miniOptikRack: [],
-    stanchion: [], connector: [], gofraShell: [], corob: [],
+    stanchion: [], connector: [], piercingConnector: [], gofraShell: [], corob: [],
     mountingBox: [], freezer: [], ribbon: [], sipHook: [],
     nail: [], glueForNail: [], cabelHook: [], plasticShell: [],
   };

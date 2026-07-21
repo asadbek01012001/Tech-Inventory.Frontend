@@ -116,6 +116,7 @@ export default function ObjectFormWrapper({
           miniOptikRack: [],
           stanchion: [],
           connector: [],
+          piercingConnector: [],
           gofraShell: [],
           corob: [],
           mountingBox: [],
